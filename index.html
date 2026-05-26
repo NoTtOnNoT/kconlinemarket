@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KC Online Market - หน้าหลัก</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans">
+
+    <nav class="bg-purple-900 text-white shadow-lg sticky top-0 z-50 border-b-4 border-amber-500">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold tracking-wide flex items-center text-amber-400">
+                <span class="mr-2">🛒</span> KC Online Market
+            </h1>
+            <div class="space-x-4 flex items-center">
+                <a href="index.html" class="text-amber-400 font-semibold hover:text-amber-300 transition">หน้าหลัก</a>
+                <a href="seller.html" class="bg-amber-500 text-purple-950 px-4 py-2 rounded-lg font-bold hover:bg-amber-400 transition shadow-md">เปิดร้านค้า / ลงขาย</a>
+                <a href="admin.html" class="text-xs opacity-75 hover:opacity-100 text-purple-200">สำหรับสภานักเรียน</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="bg-gradient-to-r from-purple-800 via-purple-900 to-purple-950 text-white py-6 px-6 shadow-md">
+        <div class="container mx-auto max-w-5xl flex flex-col md:flex-row items-center justify-between gap-4">
+            
+            <div class="flex items-center gap-3">
+                <div class="flex items-center gap-1.5 bg-white/10 p-1.5 rounded-lg border border-white/10">
+                    <img src="https://placehold.co/80x80/ffffff/000000?text=KC" alt="ตราโรงเรียน" class="w-10 h-10 object-contain rounded bg-white p-0.5">
+                    <img src="https://placehold.co/80x80/ffffff/000000?text=SC" alt="ตราสภานักเรียน" class="w-10 h-10 object-contain rounded bg-white p-0.5">
+                </div>
+                <div>
+                    <h2 class="text-xl md:text-2xl font-extrabold text-amber-400 tracking-wide">ตลาดออนไลน์ชาว KC</h2>
+                    <p class="text-xs text-purple-200/80">ระบบซื้อขายจำลองภายในสถานศึกษา</p>
+                </div>
+            </div>
+
+            <div class="bg-purple-950/50 rounded-xl p-3 border border-amber-500/20 max-w-xl w-full md:w-auto">
+                <div class="text-xs space-y-1 text-purple-100">
+                    <div class="font-bold text-amber-300 flex items-center gap-1 mb-0.5">
+                        <span>🛡️</span> นโยบายความปลอดภัยร่วมกัน:
+                    </div>
+                    <p class="pl-4 relative before:content-['•'] before:absolute before:left-0 before:text-amber-400">ผ่านการอนุมัติโดยสภานักเรียนก่อนลงขายจริง ทุกชิ้น</p>
+                    <p class="pl-4 relative before:content-['•'] before:absolute before:left-0 before:text-amber-400">ผู้ขายต้องยืนยันตัวตนด้วยรหัสนักเรียน และนัดรับภายในโรงเรียนเท่านั้น</p>
+                </div>
+            </div>
+
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-8">
+        <div class="flex items-center space-x-3 mb-6 border-b-2 border-amber-500 pb-2">
+            <span class="text-xl">🛍️</span>
+            <h3 class="text-xl font-bold text-purple-950">สินค้าทั้งหมดที่วางจำหน่าย</h3>
+        </div>
+
+        <div id="products-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div class="col-span-full text-center text-purple-900 font-medium py-12">
+                <svg class="animate-spin h-8 w-8 mx-auto mb-3 text-amber-500" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                กำลังโหลดสินค้าในตลาด...
+            </div>
+        </div>
+    </main>
+
+    <div id="product-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl transform scale-95 transition-transform duration-300 relative border-t-8 border-purple-900">
+            
+            <button onclick="closeModal()" class="absolute top-3 right-3 bg-purple-50 hover:bg-purple-100 text-purple-900 font-bold rounded-full w-8 h-8 flex items-center justify-center focus:outline-none z-10 shadow">
+                ✕
+            </button>
+
+            <img id="modal-image" src="" alt="" class="w-full h-64 object-cover">
+            
+            <div class="p-6">
+                <span id="modal-category" class="inline-block bg-purple-100 text-purple-900 text-xs px-2 py-1 rounded mb-2 font-bold border border-purple-200"></span>
+                <h4 id="modal-name" class="font-bold text-2xl text-purple-950 mb-2"></h4>
+                <div class="text-2xl font-extrabold text-amber-500 mb-4">฿<span id="modal-price"></span></div>
+                
+                <div class="bg-purple-50/50 p-4 rounded-xl border border-purple-100 mb-4">
+                    <h5 class="text-sm font-bold text-purple-900 mb-1">📝 รายละเอียดสินค้า:</h5>
+                    <p id="modal-description" class="text-gray-700 text-sm whitespace-pre-line"></p>
+                </div>
+
+                <div class="flex justify-between items-center text-sm text-gray-600 mb-6 bg-amber-50 p-3 rounded-lg border border-amber-200">
+                    <div>👤 ผู้ขาย: <span id="modal-seller" class="font-bold text-purple-950"></span></div>
+                    <div>🏫 ระดับชั้น: <span id="modal-grade" class="font-bold text-purple-950"></span></div>
+                </div>
+
+                <a id="modal-order-btn" href="#" target="_blank" class="block text-center bg-purple-900 text-white font-bold py-3 rounded-xl hover:bg-purple-800 transition shadow-lg border-b-4 border-amber-500">
+                    📱 ติดต่อซื้อขายผ่าน Line ID ผู้ขาย
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyALS8UgK7cjvKo15o6vC4LUQHRMgWjhBNQ",
+            authDomain: "kc-online-market.firebaseapp.com",
+            databaseURL: "https://kc-online-market-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "kc-online-market",
+            storageBucket: "kc-online-market.firebasestorage.app",
+            messagingSenderId: "1051502366453",
+            appId: "1:1051502366453:web:37036da23b48c00a2affbc"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        const productsContainer = document.getElementById('products-container');
+        let localProducts = {};
+
+        database.ref('products').on('value', (snapshot) => {
+            productsContainer.innerHTML = '';
+            let hasProducts = false;
+            localProducts = {};
+
+            snapshot.forEach((childSnapshot) => {
+                const product = childSnapshot.val();
+                
+                if (product.status === 'approved') {
+                    hasProducts = true;
+                    localProducts[product.id] = product;
+
+                    const productCard = `
+                        <div onclick="openModal('${product.id}')" class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl hover:-translate-y-1 transform transition duration-300 flex flex-col justify-between cursor-pointer group border border-purple-100">
+                            <div class="relative overflow-hidden">
+                                <img src="${product.image || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500'}" alt="${product.name}" class="w-full h-48 object-cover group-hover:scale-105 transition duration-300">
+                                <div class="absolute inset-0 bg-purple-900 bg-opacity-0 group-hover:bg-opacity-30 transition duration-300 flex items-center justify-center">
+                                    <span class="bg-amber-500 text-purple-950 font-bold px-3 py-1.5 rounded-lg text-sm shadow-md opacity-0 group-hover:opacity-100 transition duration-300">ดูรายละเอียด</span>
+                                </div>
+                            </div>
+                            <div class="p-4 flex-1 flex flex-col justify-between">
+                                <div>
+                                    <span class="inline-block bg-purple-100 text-purple-900 text-[11px] px-2 py-0.5 rounded-md mb-1.5 font-bold border border-purple-200">${product.category || 'ทั่วไป'}</span>
+                                    <h4 class="font-bold text-base text-purple-950 mb-1 line-clamp-1 group-hover:text-purple-700 transition">${product.name}</h4>
+                                </div>
+                                <div class="flex justify-between items-center pt-2 mt-2 border-t border-purple-50">
+                                    <span class="text-lg font-extrabold text-amber-500">฿${product.price}</span>
+                                    <span class="text-xs bg-amber-100 text-amber-900 font-semibold px-2 py-0.5 rounded-full border border-amber-200">ม.${product.grade}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    productsContainer.insertAdjacentHTML('beforeend', productCard);
+                }
+            });
+
+            if (!hasProducts) {
+                productsContainer.innerHTML = '<div class="col-span-full text-center text-purple-400 py-12">ยังไม่มีสินค้าวางจำหน่ายในขณะนี้</div>';
+            }
+        });
+
+        function openModal(id) {
+            const product = localProducts[id];
+            if (!product) return;
+
+            document.getElementById('modal-image').src = product.image || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500';
+            document.getElementById('modal-image').alt = product.name;
+            document.getElementById('modal-category').innerText = product.category || 'ทั่วไป';
+            document.getElementById('modal-name').innerText = product.name;
+            document.getElementById('modal-price').innerText = product.price;
+            document.getElementById('modal-description').innerText = product.description;
+            document.getElementById('modal-seller').innerText = product.seller;
+            document.getElementById('modal-grade').innerText = product.grade;
+            document.getElementById('modal-order-btn').href = `https://line.me/R/ti/p/~${product.contact}`;
+
+            const modal = document.getElementById('product-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('.transform').classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('product-modal');
+            modal.classList.add('opacity-0');
+            modal.querySelector('.transform').classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('product-modal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>

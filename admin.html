@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KC Online Market - ระบบสภานักเรียน</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+</head>
+<body class="bg-slate-100 min-h-screen">
+
+    <nav class="bg-slate-800 text-white shadow-md">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold tracking-wider">🛠️ ระบบจัดการหลังบ้าน (สภานักเรียน)</h1>
+            <a href="index.html" class="bg-slate-700 px-4 py-2 rounded hover:bg-slate-600 transition text-sm">ไปหน้าหลักเว็บ</a>
+        </div>
+    </nav>
+
+    <main class="container mx-auto px-6 py-10">
+        <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+            <h2 class="text-xl font-bold text-amber-600 mb-4 flex items-center gap-2">
+                ⏳ สินค้ารอการตรวจสอบและอนุมัติ
+            </h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-600 uppercase text-sm leading-normal border-b">
+                            <th class="py-3 px-6">รูปภาพ</th>
+                            <th class="py-3 px-6">ชื่อสินค้า / รายละเอียด</th>
+                            <th class="py-3 px-6">ราคา</th>
+                            <th class="py-3 px-6">ผู้ลงขาย</th>
+                            <th class="py-3 px-6 text-center">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pending-table" class="text-gray-600 text-sm font-light">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-md p-6">
+            <h2 class="text-xl font-bold text-green-600 mb-4">
+                ✅ สินค้าที่แสดงบนหน้าเว็บแล้ว
+            </h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-600 uppercase text-sm leading-normal border-b">
+                            <th class="py-3 px-6">ชื่อสินค้า</th>
+                            <th class="py-3 px-6">หมวดหมู่</th>
+                            <th class="py-3 px-6">ราคา</th>
+                            <th class="py-3 px-6">ผู้ลงขาย</th>
+                            <th class="py-3 px-6 text-center">การกระทำ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="approved-table" class="text-gray-600 text-sm font-light">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // วางค่า Config ของ Firebase ของคุณที่นี่
+        const firebaseConfig = {
+            apiKey: "AIzaSyALS8UgK7cjvKo15o6vC4LUQHRMgWjhBNQ",
+            authDomain: "kc-online-market.firebaseapp.com",
+            databaseURL: "https://kc-online-market-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "kc-online-market",
+            storageBucket: "kc-online-market.firebasestorage.app",
+            messagingSenderId: "1051502366453",
+            appId: "1:1051502366453:web:37036da23b48c00a2affbc"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        const pendingTable = document.getElementById('pending-table');
+        const approvedTable = document.getElementById('approved-table');
+
+        // ฟังก์ชันอัปเดตสถานะ (อนุมัติ / ลบ)
+        function updateStatus(productId, newStatus) {
+            if(newStatus === 'deleted') {
+                if(confirm('คุณแน่ใจใช่ไหมที่จะลบสินค้านี้ออก?')) {
+                    database.ref('products/' + productId).remove();
+                }
+            } else {
+                database.ref('products/' + productId).update({
+                    status: newStatus
+                });
+            }
+        }
+
+        // ดึงข้อมูลแบบ Realtime ทั้งสองตาราง
+        database.ref('products').on('value', (snapshot) => {
+            pendingTable.innerHTML = '';
+            approvedTable.innerHTML = '';
+            let hasPending = false;
+            let hasApproved = false;
+
+            snapshot.forEach((childSnapshot) => {
+                const product = childSnapshot.val();
+
+                if (product.status === 'pending') {
+                    hasPending = true;
+                    const row = `
+                        <tr class="border-b border-gray-100 hover:bg-gray-50">
+                            <td class="py-3 px-6"><img src="${product.image}" class="w-16 h-16 object-cover rounded-lg"></td>
+                            <td class="py-3 px-6">
+                                <span class="font-bold text-gray-800 text-base">${product.name}</span><br>
+                                <span class="text-xs text-gray-400">ประเภท: ${product.category}</span><br>
+                                <p class="text-gray-500 mt-1 max-w-xs truncate">${product.description}</p>
+                            </td>
+                            <td class="py-3 px-6 font-bold text-red-500">฿${product.price}</td>
+                            <td class="py-3 px-6">${product.seller} (${product.grade})</td>
+                            <td class="py-3 px-6 text-center">
+                                <div class="flex item-center justify-center gap-2">
+                                    <button onclick="updateStatus('${product.id}', 'approved')" class="bg-green-500 text-white px-3 py-1.5 rounded font-medium hover:bg-green-600 transition text-xs">อนุมัติ</button>
+                                    <button onclick="updateStatus('${product.id}', 'deleted')" class="bg-red-500 text-white px-3 py-1.5 rounded font-medium hover:bg-red-600 transition text-xs">ปฏิเสธ/ลบ</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    pendingTable.insertAdjacentHTML('beforeend', row);
+                } else if (product.status === 'approved') {
+                    hasApproved = true;
+                    const row = `
+                        <tr class="border-b border-gray-100 hover:bg-gray-50">
+                            <td class="py-3 px-6 font-medium text-gray-800">${product.name}</td>
+                            <td class="py-3 px-6">${product.category}</td>
+                            <td class="py-3 px-6 font-bold text-red-500">฿${product.price}</td>
+                            <td class="py-3 px-6">${product.seller} (${product.grade})</td>
+                            <td class="py-3 px-6 text-center">
+                                <button onclick="updateStatus('${product.id}', 'deleted')" class="text-red-500 hover:underline text-xs font-medium">ถอนการแสดงผล</button>
+                            </td>
+                        </tr>
+                    `;
+                    approvedTable.insertAdjacentHTML('beforeend', row);
+                }
+            });
+
+            if(!hasPending) {
+                pendingTable.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-gray-400">🎉 ไม่มีสินค้ารอการตรวจสอบในขณะนี้</td></tr>`;
+            }
+            if(!hasApproved) {
+                approvedTable.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-gray-400">ไม่มีสินค้าที่กำลังออนไลน์อยู่</td></tr>`;
+            }
+        });
+    </script>
+</body>
+</html>
