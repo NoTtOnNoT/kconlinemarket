@@ -3,196 +3,214 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KC Online Market - หน้าหลัก</title>
+    <title>KC Online Market - Premium School Marketplace</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-gray-50 min-h-screen font-sans">
+<body class="bg-[#F8F9FC] text-slate-800 min-h-screen flex flex-col justify-between antialiased selection:bg-purple-200">
 
-    <nav class="bg-purple-900 text-white shadow-lg sticky top-0 z-50 border-b-4 border-amber-500">
-        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold tracking-wide flex items-center text-amber-400">
-                <span class="mr-2">🛒</span> KC Online Market
-            </h1>
-            <div class="space-x-4 flex items-center">
-                <a href="index.html" class="text-amber-400 font-semibold hover:text-amber-300 transition">หน้าหลัก</a>
-                <a href="seller.html" class="bg-amber-500 text-purple-950 px-4 py-2 rounded-lg font-bold hover:bg-amber-400 transition shadow-md">เปิดร้านค้า / ลงขาย</a>
-                <a href="admin.html" class="text-xs opacity-75 hover:opacity-100 text-purple-200">สำหรับสภานักเรียน</a>
+    <div class="absolute top-0 left-1/4 w-96 h-96 bg-purple-200/40 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+    <div class="absolute top-10 right-1/4 w-96 h-96 bg-amber-100/50 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+
+    <nav class="backdrop-blur-md bg-white/80 sticky top-0 z-40 border-b border-slate-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
+            <div class="flex items-center gap-3 group">
+                <div class="w-10 h-10 bg-gradient-to-tr from-purple-700 to-indigo-600 rounded-xl flex items-center justify-center shadow-md shadow-purple-200 group-hover:scale-105 transition-transform">
+                    <i data-lucide="shopping-bag" class="w-5 h-5 text-white"></i>
+                </div>
+                <div>
+                    <span class="text-lg font-bold tracking-tight bg-gradient-to-r from-purple-900 to-indigo-900 bg-clip-text text-transparent block leading-tight">KC Online Market</span>
+                    <span class="block text-[9px] text-slate-400 font-medium tracking-widest uppercase">School Sandbox</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 text-[11px] font-semibold bg-amber-50 text-amber-800 px-3 py-1.5 rounded-full border border-amber-200/60 shadow-sm">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                ระบบจำลองภายในสถานศึกษา
             </div>
         </div>
     </nav>
 
-    <header class="bg-gradient-to-r from-purple-800 via-purple-900 to-purple-950 text-white py-6 px-6 shadow-md">
-        <div class="container mx-auto max-w-5xl flex flex-col md:flex-row items-center justify-between gap-4">
-            
-            <div class="flex items-center gap-3">
-                <div class="flex items-center gap-1.5 bg-white/10 p-1.5 rounded-lg border border-white/10">
-                    <img src="https://placehold.co/80x80/ffffff/000000?text=KC" alt="ตราโรงเรียน" class="w-10 h-10 object-contain rounded bg-white p-0.5">
-                    <img src="https://placehold.co/80x80/ffffff/000000?text=SC" alt="ตราสภานักเรียน" class="w-10 h-10 object-contain rounded bg-white p-0.5">
-                </div>
-                <div>
-                    <h2 class="text-xl md:text-2xl font-extrabold text-amber-400 tracking-wide">ตลาดออนไลน์ชาว KC</h2>
-                    <p class="text-xs text-purple-200/80">ระบบซื้อขายจำลองภายในสถานศึกษา</p>
-                </div>
-            </div>
+    <header class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-6 pb-2">
+        <div class="bg-gradient-to-br from-[#2D124D] via-[#1E0B36] to-[#120424] text-white rounded-2xl p-6 shadow-lg shadow-purple-950/10 relative overflow-hidden">
+            <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-gradient-to-tr from-amber-400 to-purple-600 opacity-20 rounded-full blur-2xl"></div>
 
-            <div class="bg-purple-950/50 rounded-xl p-3 border border-amber-500/20 max-w-xl w-full md:w-auto">
-                <div class="text-xs space-y-1 text-purple-100">
-                    <div class="font-bold text-amber-300 flex items-center gap-1 mb-0.5">
-                        <span>🛡️</span> นโยบายความปลอดภัยร่วมกัน:
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center relative z-10">
+                <div class="lg:col-span-7 flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
+                    <div class="flex items-center gap-2.5 shrink-0 bg-white p-2.5 rounded-2xl shadow-md border border-slate-100/10">
+                        <div class="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center transition-transform hover:scale-105 duration-300">
+                            <img src="photo/kc.png" alt="ตราโรงเรียน" class="w-full h-full object-contain filter drop-shadow-sm">
+                        </div>
+                        <div class="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center transition-transform hover:scale-105 duration-300">
+                            <img src="photo/sckc.png" alt="ตราสภานักเรียน" class="w-full h-full object-contain filter drop-shadow-sm">
+                        </div>
                     </div>
-                    <p class="pl-4 relative before:content-['•'] before:absolute before:left-0 before:text-amber-400">ผ่านการอนุมัติโดยสภานักเรียนก่อนลงขายจริง ทุกชิ้น</p>
-                    <p class="pl-4 relative before:content-['•'] before:absolute before:left-0 before:text-amber-400">ผู้ขายต้องยืนยันตัวตนด้วยรหัสนักเรียน และนัดรับภายในโรงเรียนเท่านั้น</p>
+
+                    <div class="space-y-1.5">
+                        <span class="inline-flex items-center gap-1.5 text-[10px] font-semibold text-purple-300 uppercase tracking-wider">
+                            <span class="w-1 h-1 rounded-full bg-purple-400"></span>
+                            KC Student Community Portal
+                        </span>
+                        <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+                            ตลาดออนไลน์ของ <span class="bg-gradient-to-r from-amber-300 to-amber-500 bg-clip-text text-transparent">ชาว KC</span>
+                        </h1>
+                        <p class="text-xs text-purple-200/70 max-w-xl font-light leading-relaxed">
+                            พื้นที่สร้างสรรค์การเรียนรู้ด้านธุรกิจจำลอง ปลอดภัย มั่นใจได้ มุ่งเน้นการปฏิสัมพันธ์เชิงบวกภายในรั้วโรงเรียนของเรา
+                        </p>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-5 bg-white/5 backdrop-blur-md rounded-xl p-4 border border-white/10 space-y-2">
+                    <div class="flex items-center gap-2 text-amber-400 text-[11px] font-bold tracking-wider uppercase">
+                        <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                        นโยบายความปลอดภัยร่วมกัน
+                    </div>
+                    <ul class="text-[11px] text-purple-100/95 space-y-2 font-light">
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-amber-400 mt-0.5 shrink-0"></i>
+                            <span class="leading-normal">สินค้าทุกชิ้นต้องผ่านการตรวจสอบโดย <strong class="text-white font-medium underline decoration-amber-400/50">สภานักเรียน</strong> ก่อนลงขาย</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-amber-400 mt-0.5 shrink-0"></i>
+                            <span class="leading-normal">ผู้ขายต้องยืนยันตัวตน และ <strong class="text-white font-medium underline decoration-amber-400/50">นัดรับสินค้าภายในโรงเรียนเท่านั้น</strong></span>
+                        </li>
+                    </ul>
                 </div>
             </div>
-
         </div>
     </header>
 
-    <main class="container mx-auto px-6 py-8">
-        <div class="flex items-center space-x-3 mb-6 border-b-2 border-amber-500 pb-2">
-            <span class="text-xl">🛍️</span>
-            <h3 class="text-xl font-bold text-purple-950">สินค้าทั้งหมดที่วางจำหน่าย</h3>
+    <main class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 flex-1">
+        <div class="flex items-center justify-between mb-6 border-b border-slate-200 pb-3">
+            <div class="flex items-center gap-2">
+                <div class="w-1.5 h-5 bg-purple-700 rounded-full"></div>
+                <h3 class="text-lg font-bold text-slate-800 tracking-tight">สินค้าทั้งหมดในระบบ</h3>
+            </div>
+            <span class="text-[11px] text-slate-400 font-medium">เรียงตามการอัปเดตล่าสุด</span>
         </div>
 
-        <div id="products-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            <div class="col-span-full text-center text-purple-900 font-medium py-12">
-                <svg class="animate-spin h-8 w-8 mx-auto mb-3 text-amber-500" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                กำลังโหลดสินค้าในตลาด...
+        <div id="products-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+            <div class="col-span-full flex flex-col items-center justify-center py-16 text-slate-400">
+                <div class="w-8 h-8 border-3 border-purple-200 border-t-purple-700 rounded-full animate-spin mb-3"></div>
+                <p class="text-xs font-medium">กำลังโหลดสินค้าในตลาดสักครู่...</p>
             </div>
         </div>
     </main>
 
-    <div id="product-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
-        <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl transform scale-95 transition-transform duration-300 relative border-t-8 border-purple-900">
-            
-            <button onclick="closeModal()" class="absolute top-3 right-3 bg-purple-50 hover:bg-purple-100 text-purple-900 font-bold rounded-full w-8 h-8 flex items-center justify-center focus:outline-none z-10 shadow">
-                ✕
+    <footer class="border-t border-slate-200 bg-white py-4 text-center text-[11px] text-slate-400 font-light">
+        © 2026 KC Online Market. Created for Educational Purposes.
+    </footer>
+
+    <div id="product-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl border border-slate-100 transform scale-95 transition-transform duration-300 relative max-h-[90vh] flex flex-col">
+
+            <button onclick="closeModal()" class="absolute top-3 right-3 bg-white/80 hover:bg-white backdrop-blur-md text-slate-600 hover:text-slate-900 p-1.5 rounded-full transition shadow-sm border border-slate-200/50 z-20">
+                <i data-lucide="x" class="w-4 h-4"></i>
             </button>
 
-            <img id="modal-image" src="" alt="" class="w-full h-64 object-cover">
-            
-            <div class="p-6">
-                <span id="modal-category" class="inline-block bg-purple-100 text-purple-900 text-xs px-2 py-1 rounded mb-2 font-bold border border-purple-200"></span>
-                <h4 id="modal-name" class="font-bold text-2xl text-purple-950 mb-2"></h4>
-                <div class="text-2xl font-extrabold text-amber-500 mb-4">฿<span id="modal-price"></span></div>
+            <div class="overflow-y-auto flex-1 custom-scrollbar p-5 space-y-4">
                 
-                <div class="bg-purple-50/50 p-4 rounded-xl border border-purple-100 mb-4">
-                    <h5 class="text-sm font-bold text-purple-900 mb-1">📝 รายละเอียดสินค้า:</h5>
-                    <p id="modal-description" class="text-gray-700 text-sm whitespace-pre-line"></p>
+                <div class="pt-2">
+                    <span id="modal-category" class="inline-block bg-purple-100 text-purple-700 text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-md mb-2"></span>
+                    <h4 id="modal-name" class="font-bold text-xl text-slate-900 tracking-tight leading-snug mb-1"></h4>
+                    <div class="text-2xl font-black text-purple-700 flex items-baseline gap-0.5">
+                        <span class="text-lg font-bold">฿</span><span id="modal-price"></span>
+                    </div>
                 </div>
 
-                <div class="flex justify-between items-center text-sm text-gray-600 mb-6 bg-amber-50 p-3 rounded-lg border border-amber-200">
-                    <div>👤 ผู้ขาย: <span id="modal-seller" class="font-bold text-purple-950"></span></div>
-                    <div>🏫 ระดับชั้น: <span id="modal-grade" class="font-bold text-purple-950"></span></div>
+                <div class="bg-slate-50 rounded-xl p-3 border border-slate-100 space-y-1">
+                    <h5 class="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                        <i data-lucide="file-text" class="w-3.5 h-3.5"></i> รายละเอียดสินค้า
+                    </h5>
+                    <p id="modal-description" class="text-slate-600 text-xs leading-relaxed whitespace-pre-line"></p>
                 </div>
 
-                <a id="modal-order-btn" href="#" target="_blank" class="block text-center bg-purple-900 text-white font-bold py-3 rounded-xl hover:bg-purple-800 transition shadow-lg border-b-4 border-amber-500">
-                    📱 ติดต่อซื้อขายผ่าน Line ID ผู้ขาย
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="bg-purple-50/50 border border-purple-100/50 rounded-xl p-2.5 flex items-center gap-2.5">
+                        <div class="w-7 h-7 bg-purple-100 rounded-lg flex items-center justify-center text-purple-700 shrink-0">
+                            <i data-lucide="user" class="w-3.5 h-3.5"></i>
+                        </div>
+                        <div class="overflow-hidden">
+                            <span class="block text-[9px] text-slate-400 font-medium uppercase leading-none mb-0.5">ผู้ลงขาย</span>
+                            <span id="modal-seller" class="block text-xs font-semibold text-slate-700 truncate"></span>
+                        </div>
+                    </div>
+                    <div class="bg-amber-50/50 border border-amber-100/50 rounded-xl p-2.5 flex items-center gap-2.5">
+                        <div class="w-7 h-7 bg-amber-100 rounded-lg flex items-center justify-center text-amber-700 shrink-0">
+                            <i data-lucide="graduation-cap" class="w-3.5 h-3.5"></i>
+                        </div>
+                        <div>
+                            <span class="block text-[9px] text-slate-400 font-medium uppercase leading-none mb-0.5">ระดับชั้น</span>
+                            <span class="block text-xs font-semibold text-slate-700">ม.<span id="modal-grade"></span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="modal-gallery-container" class="space-y-2 border-t border-slate-100 pt-4 hidden">
+                    <div class="flex justify-between items-center">
+                        <h5 class="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                            <i data-lucide="images" class="w-3.5 h-3.5"></i> รูปภาพสินค้า (<span id="gallery-count">0</span>)
+                        </h5>
+                        <button onclick="openFullscreenGallery(0)" class="text-[11px] font-semibold text-purple-700 hover:text-purple-900 flex items-center gap-0.5 transition">
+                            ดูรูปทั้งหมด <i data-lucide="chevron-right" class="w-3 h-3"></i>
+                        </button>
+                    </div>
+
+                    <div class="relative group bg-slate-100 rounded-xl overflow-hidden border border-slate-200 h-52 flex items-center justify-center">
+                        <div id="modal-carousel-wrapper" class="w-full h-full flex transition-transform duration-300 ease-out">
+                            </div>
+                        
+                        <button onclick="moveCarousel(-1)" class="absolute left-2 bg-white/80 hover:bg-white text-slate-700 p-1.5 rounded-full shadow-md backdrop-blur-sm transition opacity-0 group-hover:opacity-100 z-10">
+                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="moveCarousel(1)" class="absolute right-2 bg-white/80 hover:bg-white text-slate-700 p-1.5 rounded-full shadow-md backdrop-blur-sm transition opacity-0 group-hover:opacity-100 z-10">
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </button>
+
+                        <div id="carousel-dots" class="absolute bottom-2.5 flex gap-1.5 justify-center w-full z-10"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="p-4 bg-slate-50 border-t border-slate-100 shrink-0">
+                <a id="modal-order-btn" href="#" target="_blank" class="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-700 to-indigo-600 hover:from-purple-800 hover:to-indigo-700 text-white font-semibold py-2.5 px-4 rounded-xl transition shadow-md shadow-purple-200 text-xs focus:ring-2 focus:ring-purple-400">
+                    <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+                    ติดต่อซื้อขายผ่าน Line ID ผู้ขาย
                 </a>
             </div>
         </div>
     </div>
 
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyALS8UgK7cjvKo15o6vC4LUQHRMgWjhBNQ",
-            authDomain: "kc-online-market.firebaseapp.com",
-            databaseURL: "https://kc-online-market-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "kc-online-market",
-            storageBucket: "kc-online-market.firebasestorage.app",
-            messagingSenderId: "1051502366453",
-            appId: "1:1051502366453:web:37036da23b48c00a2affbc"
-        };
+    <div id="fullscreen-gallery-modal" class="fixed inset-0 z-[60] bg-slate-950/95 backdrop-blur-md hidden opacity-0 transition-opacity duration-300 flex flex-col justify-between p-4">
+        <div class="flex justify-between items-center text-white w-full max-w-3xl mx-auto pt-2">
+            <span id="fullscreen-counter" class="text-xs font-medium text-slate-400">รูปที่ 1/1</span>
+            <button onclick="closeFullscreenGallery()" class="bg-white/10 hover:bg-white/20 text-white p-2 rounded-full transition">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
         
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+        <div class="flex-1 flex items-center justify-center max-w-3xl w-full mx-auto my-4 relative">
+            <img id="fullscreen-image" src="" alt="Full Image" class="max-h-[70vh] max-w-full object-contain rounded-lg shadow-2xl">
+            
+            <button onclick="moveFullscreen(-1)" class="absolute left-2 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full transition">
+                <i data-lucide="chevron-left" class="w-6 h-6"></i>
+            </button>
+            <button onclick="moveFullscreen(1)" class="absolute right-2 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full transition">
+                <i data-lucide="chevron-right" class="w-6 h-6"></i>
+            </button>
+        </div>
 
-        const productsContainer = document.getElementById('products-container');
-        let localProducts = {};
+        <div id="fullscreen-thumbnails" class="flex gap-2 justify-center overflow-x-auto py-4 max-w-3xl w-full mx-auto custom-scrollbar">
+            </div>
+    </div>
 
-        database.ref('products').on('value', (snapshot) => {
-            productsContainer.innerHTML = '';
-            let hasProducts = false;
-            localProducts = {};
-
-            snapshot.forEach((childSnapshot) => {
-                const product = childSnapshot.val();
-                
-                if (product.status === 'approved') {
-                    hasProducts = true;
-                    localProducts[product.id] = product;
-
-                    const productCard = `
-                        <div onclick="openModal('${product.id}')" class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl hover:-translate-y-1 transform transition duration-300 flex flex-col justify-between cursor-pointer group border border-purple-100">
-                            <div class="relative overflow-hidden">
-                                <img src="${product.image || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500'}" alt="${product.name}" class="w-full h-48 object-cover group-hover:scale-105 transition duration-300">
-                                <div class="absolute inset-0 bg-purple-900 bg-opacity-0 group-hover:bg-opacity-30 transition duration-300 flex items-center justify-center">
-                                    <span class="bg-amber-500 text-purple-950 font-bold px-3 py-1.5 rounded-lg text-sm shadow-md opacity-0 group-hover:opacity-100 transition duration-300">ดูรายละเอียด</span>
-                                </div>
-                            </div>
-                            <div class="p-4 flex-1 flex flex-col justify-between">
-                                <div>
-                                    <span class="inline-block bg-purple-100 text-purple-900 text-[11px] px-2 py-0.5 rounded-md mb-1.5 font-bold border border-purple-200">${product.category || 'ทั่วไป'}</span>
-                                    <h4 class="font-bold text-base text-purple-950 mb-1 line-clamp-1 group-hover:text-purple-700 transition">${product.name}</h4>
-                                </div>
-                                <div class="flex justify-between items-center pt-2 mt-2 border-t border-purple-50">
-                                    <span class="text-lg font-extrabold text-amber-500">฿${product.price}</span>
-                                    <span class="text-xs bg-amber-100 text-amber-900 font-semibold px-2 py-0.5 rounded-full border border-amber-200">ม.${product.grade}</span>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    productsContainer.insertAdjacentHTML('beforeend', productCard);
-                }
-            });
-
-            if (!hasProducts) {
-                productsContainer.innerHTML = '<div class="col-span-full text-center text-purple-400 py-12">ยังไม่มีสินค้าวางจำหน่ายในขณะนี้</div>';
-            }
-        });
-
-        function openModal(id) {
-            const product = localProducts[id];
-            if (!product) return;
-
-            document.getElementById('modal-image').src = product.image || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500';
-            document.getElementById('modal-image').alt = product.name;
-            document.getElementById('modal-category').innerText = product.category || 'ทั่วไป';
-            document.getElementById('modal-name').innerText = product.name;
-            document.getElementById('modal-price').innerText = product.price;
-            document.getElementById('modal-description').innerText = product.description;
-            document.getElementById('modal-seller').innerText = product.seller;
-            document.getElementById('modal-grade').innerText = product.grade;
-            document.getElementById('modal-order-btn').href = `https://line.me/R/ti/p/~${product.contact}`;
-
-            const modal = document.getElementById('product-modal');
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                modal.querySelector('.transform').classList.remove('scale-95');
-            }, 10);
-        }
-
-        function closeModal() {
-            const modal = document.getElementById('product-modal');
-            modal.classList.add('opacity-0');
-            modal.querySelector('.transform').classList.add('scale-95');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300);
-        }
-
-        window.onclick = function(event) {
-            const modal = document.getElementById('product-modal');
-            if (event.target == modal) {
-                closeModal();
-            }
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>

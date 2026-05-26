@@ -1,0 +1,28 @@
+/* Custom Global Style */
+body { 
+    font-family: 'Prompt', 'Inter', sans-serif; 
+}
+
+/* ตกแต่งแถบเลื่อน (Scrollbar) ให้สวยงามและมีความพรีเมียม */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #CBD5E1; /* สีสไลด์บาร์สเลทจางๆ */
+    border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94A3B8;
+}
+
+/* สำหรับควบคุมความกว้างการป้อนพิกเซลแนวราบของรูปย่อแกลเลอรี */
+#modal-gallery {
+    -webkit-overflow-scrolling: touch; /* เลื่อนสไลด์ใน iOS ให้ลื่นไหล */
+}

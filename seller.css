@@ -1,0 +1,23 @@
+@charset "UTF-8";
+
+/* รองรับการเลื่อนดูตารางบนแพลตฟอร์มโมบายล์แบบราบรื่น */
+.overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ควบคุมการแสดงผลของปุ่มลบรูปภาพ (✕) บนกล่อง Preview */
+#image-preview-grid button {
+    transition: all 0.2s ease-in-out;
+}
+
+/* บน Desktop: ให้ปุ่มลบรูปแสดงขึ้นมาเมื่อนำเมาส์ไปวางเหนือกังหันรูปภาพ */
+@media (min-width: 640px) {
+    #image-preview-grid .group:hover button {
+        transform: scale(1);
+        opacity: 1;
+    }
+    #image-preview-grid button {
+        transform: scale(0.7);
+        opacity: 0;
+    }
+}

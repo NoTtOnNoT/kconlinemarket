@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="seller.css">
 </head>
 <body class="bg-gray-50 min-h-screen font-sans antialiased text-gray-900">
 
@@ -78,7 +79,7 @@
             </div>
         </div>
 
-        <div id="dashboard-section" class="hidden space-y-8 animate-fade-in">
+        <div id="dashboard-section" class="hidden space-y-8">
             
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="lg:col-span-2 bg-gradient-to-r from-purple-800 to-purple-950 rounded-2xl p-6 text-white flex flex-col justify-between shadow border-b-4 border-amber-500">
@@ -129,18 +130,18 @@
                     <input type="hidden" id="p-id">
 
                     <div class="space-y-3">
-                        <label class="block text-sm font-semibold text-gray-700">รูปภาพสินค้า</label>
+                        <label class="block text-sm font-semibold text-gray-700">รูปภาพสินค้า (อัปโหลดได้หลายรูป)</label>
                         <div class="border-2 border-dashed border-purple-200 rounded-xl p-4 text-center bg-purple-50/20 hover:bg-purple-50 transition relative group">
-                            <input type="file" id="p-image-file" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
+                            <input type="file" id="p-image-file" accept="image/*" multiple class="absolute inset-0 opacity-0 cursor-pointer">
                             <div id="upload-placeholder" class="space-y-1">
                                 <span class="text-2xl">📸</span>
                                 <p class="text-xs font-medium text-purple-900/70">คลิกหรือลากวางรูปภาพ</p>
-                                <p class="text-[10px] text-gray-400">ขนาดไฟล์ไม่เกิน 1.5MB</p>
+                                <p class="text-[10px] text-gray-400">ขนาดไฟล์รวมแต่ละภาพไม่เกิน 1.5MB</p>
                             </div>
-                            <div id="image-preview-container" class="mt-2 hidden">
-                                <img id="image-preview" src="" class="h-40 w-full object-cover rounded-lg border border-purple-200 shadow-inner mx-auto">
-                                <p class="text-[10px] text-purple-700 font-bold mt-1">คลิกที่รูปเพื่อเลือกเปลี่ยนรูปใหม่</p>
-                            </div>
+                        </div>
+                        <div id="image-preview-container" class="mt-2 hidden bg-gray-50 p-2 rounded-xl border border-gray-200">
+                            <div id="image-preview-grid" class="grid grid-cols-3 gap-2"></div>
+                            <p class="text-[10px] text-purple-700 font-bold mt-2 text-center">รูปแรกในตารางพรีวิวจะถูกระบุให้เป็น "ภาพหน้าปก"</p>
                         </div>
                     </div>
 
@@ -213,325 +214,6 @@
         </div>
     </main>
 
-    <script>
-        // กำหนดค่า Config ของ Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyALS8UgK7cjvKo15o6vC4LUQHRMgWjhBNQ",
-            authDomain: "kc-online-market.firebaseapp.com",
-            databaseURL: "https://kc-online-market-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "kc-online-market",
-            storageBucket: "kc-online-market.firebasestorage.app",
-            messagingSenderId: "1051502366453",
-            appId: "1:1051502366453:web:37036da23b48c00a2affbc"
-        };
-        
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-
-        let currentUser = null;
-        let base64ImageString = "";
-        let isEditingMode = false;
-
-        // สลับฟอร์มเข้าสู่ระบบ / สมัครสมาชิก
-        function toggleAuth(showLogin) {
-            if (showLogin) {
-                document.getElementById('login-box').classList.remove('hidden');
-                document.getElementById('register-box').classList.add('hidden');
-            } else {
-                document.getElementById('login-box').classList.add('hidden');
-                document.getElementById('register-box').classList.remove('hidden');
-            }
-        }
-
-        // 1. ระบบสมัครสมาชิก (Register)
-        document.getElementById('register-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const studentId = document.getElementById('reg-student-id').value.trim();
-            const password = document.getElementById('reg-password').value;
-            const name = document.getElementById('reg-name').value.trim();
-            const grade = document.getElementById('reg-grade').value.trim();
-
-            database.ref('users/' + studentId).once('value', function(snapshot) {
-                if (snapshot.exists()) {
-                    alert('⚠️ รหัสนักเรียนนี้เคยลงทะเบียนเป็นผู้ขายไว้แล้ว!');
-                } else {
-                    database.ref('users/' + studentId).set({
-                        password: password,
-                        name: name,
-                        grade: grade
-                    }).then(() => {
-                        alert('🎉 สมัครสมาชิกผู้ขายสำเร็จ! ระบบจะนำคุณไปล็อกอิน');
-                        document.getElementById('register-form').reset();
-                        toggleAuth(true);
-                    });
-                }
-            });
-        });
-
-        // 2. ระบบเข้าสู่ระบบ (Login)
-        document.getElementById('login-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const studentId = document.getElementById('login-student-id').value.trim();
-            const password = document.getElementById('login-password').value;
-
-            database.ref('users/' + studentId).once('value', function(snapshot) {
-                if (snapshot.exists() && snapshot.val().password === password) {
-                    currentUser = {
-                        studentId: studentId,
-                        name: snapshot.val().name,
-                        grade: snapshot.val().grade
-                    };
-                    alert('🔓 เข้าสู่ระบบสำเร็จ!');
-                    initializeDashboard();
-                } else {
-                    alert('❌ รหัสนักเรียนหรือรหัสผ่านไม่ถูกต้อง');
-                }
-            });
-        });
-
-        // เปิดแผงการจัดการหลักหลังสิทธิ์ถูกต้อง
-        function initializeDashboard() {
-            document.getElementById('auth-section').classList.add('hidden');
-            document.getElementById('dashboard-section').classList.remove('hidden');
-            
-            document.getElementById('user-display').innerText = `👤 ${currentUser.name} (${currentUser.studentId})`;
-            document.getElementById('user-display').classList.remove('hidden');
-            document.getElementById('btn-logout').classList.remove('hidden');
-
-            // บรรจุค่าโปรไฟล์ลงในฟอร์มแก้ไขโปรไฟล์
-            document.getElementById('prof-name').value = currentUser.name;
-            document.getElementById('prof-grade').value = currentUser.grade;
-
-            loadMyProducts();
-        }
-
-        // 3. แก้ไขข้อมูลส่วนตัวตนเอง (Profile Management)
-        document.getElementById('profile-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            if (!currentUser) return;
-
-            const newName = document.getElementById('prof-name').value.trim();
-            const newGrade = document.getElementById('prof-grade').value.trim();
-            const newPassword = document.getElementById('prof-password').value;
-
-            let updates = {
-                name: newName,
-                grade: newGrade
-            };
-
-            // หากมีการกรอกรหัสผ่านใหม่เข้ามา ให้แก้ไขพาสเวิร์ดด้วย
-            if (newPassword !== "") {
-                updates.password = newPassword;
-            }
-
-            database.ref('users/' + currentUser.studentId).update(updates).then(() => {
-                currentUser.name = newName;
-                currentUser.grade = newGrade;
-                document.getElementById('user-display').innerText = `👤 ${currentUser.name} (${currentUser.studentId})`;
-                document.getElementById('prof-password').value = ""; // เคลียร์ช่องรหัสผ่าน
-                alert('💾 บันทึกการแก้ไขข้อมูลส่วนตัวของคุณเรียบร้อยแล้ว!');
-            }).catch(err => alert('เกิดข้อผิดพลาด: ' + err.message));
-        });
-
-        // ออกจากระบบ
-        function logout() {
-            currentUser = null;
-            base64ImageString = "";
-            resetProductForm();
-            document.getElementById('auth-section').classList.remove('hidden');
-            document.getElementById('dashboard-section').classList.add('hidden');
-            document.getElementById('user-display').classList.add('hidden');
-            document.getElementById('btn-logout').classList.add('hidden');
-            document.getElementById('login-form').reset();
-            
-            // ล้างจุดเชื่อมโยงข้อมูลเดิม
-            database.ref('products').off();
-        }
-
-        // 4. ระบบการอัปโหลดไฟล์รูปภาพและแปลงเป็น Base64 String
-        document.getElementById('p-image-file').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                if (file.size > 1.5 * 1024 * 1024) { 
-                    alert("⚠️ รูปภาพมีขนาดใหญ่เกินไป! กรุณาใช้ไฟล์รูปขนาดไม่เกิน 1.5 MB");
-                    this.value = "";
-                    return;
-                }
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    base64ImageString = event.target.result;
-                    document.getElementById('image-preview').src = base64ImageString;
-                    document.getElementById('image-preview-container').classList.remove('hidden');
-                    document.getElementById('upload-placeholder').classList.add('hidden');
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        // 5. ระบบบันทึกข้อมูลสินค้า (ใช้ได้ทั้งแบบ "เพิ่มใหม่" และ "แก้ไขแล้วส่งตรวจสอบ")
-        document.getElementById('product-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            if (!currentUser) return;
-
-            const pId = document.getElementById('p-id').value;
-            const pName = document.getElementById('p-name').value.trim();
-            const pPrice = parseFloat(document.getElementById('p-price').value);
-            const pCategory = document.getElementById('p-category').value;
-            const pDesc = document.getElementById('p-desc').value.trim();
-            const pContact = document.getElementById('p-contact').value.trim();
-
-            if (!base64ImageString) {
-                alert('📸 กรุณาทำการอัปโหลดรูปภาพสินค้าก่อนส่งข้อมูล');
-                return;
-            }
-
-            let productRef;
-            if (isEditingMode && pId) {
-                // หากกำลังอยู่ในโหมดแก้ไข ให้ใช้พิกัดเดิม
-                productRef = database.ref('products/' + pId);
-            } else {
-                // หากลงเพิ่มใหม่ให้สุ่มคีย์
-                productRef = database.ref('products').push();
-            }
-
-            const productData = {
-                id: isEditingMode ? pId : productRef.key,
-                name: pName,
-                price: pPrice,
-                category: pCategory,
-                description: pDesc,
-                image: base64ImageString,
-                seller: currentUser.name,
-                studentId: currentUser.studentId,
-                grade: currentUser.grade,
-                contact: pContact,
-                status: 'pending', // ถูกตีกลับไปเป็นสถานะ "รอรับตรวจสอบจากแอดมิน" เสมอเมื่อมีการแก้ไขหรือลงเพิ่มใหม่
-                timestamp: Date.now()
-            };
-
-            productRef.set(productData).then(() => {
-                if (isEditingMode) {
-                    alert('📝 แก้ไขข้อมูลสินค้าสำเร็จ! ระบบส่งกลับไปให้ทางสภานักเรียนรีวิวอนุมัติอีกครั้ง');
-                } else {
-                    alert('🚀 ลงสินค้าใหม่สำเร็จ! กรุณารอสภานักเรียนตรวจสอบภายใน 24 ชั่วโมง');
-                }
-                resetProductForm();
-            }).catch(err => alert('เกิดข้อผิดพลาดในการบันทึก: ' + err.message));
-        });
-
-        // ดึงข้อมูลสินค้าเฉพาะของตัวเอง (กรองตามรหัสนักเรียนของผู้ล็อกอิน)
-        function loadMyProducts() {
-            const tableBody = document.getElementById('my-products-list');
-            
-            database.ref('products').on('value', function(snapshot) {
-                tableBody.innerHTML = '';
-                let count = 0;
-
-                snapshot.forEach(childSnapshot => {
-                    const product = childSnapshot.val();
-                    
-                    // กรองดึงเฉพาะสินค้าที่เป็นของรหัสนักเรียนรายนี้
-                    if (product.studentId === currentUser.studentId) {
-                        count++;
-                        
-                        // คัดกรองและจัดรูปแบบ Tag ดีไซน์สถานะให้สวยงามอ่านง่าย
-                        let statusBadge = '';
-                        if (product.status === 'approved') {
-                            statusBadge = `<span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-full font-bold border border-emerald-200">✅ ผ่านการอนุมัติ</span>`;
-                        } else if (product.status === 'rejected') {
-                            statusBadge = `<span class="bg-red-100 text-red-800 text-xs px-2.5 py-1 rounded-full font-bold border border-red-200">❌ ถูกปฏิเสธ</span>`;
-                        } else {
-                            statusBadge = `<span class="bg-amber-100 text-amber-800 text-xs px-2.5 py-1 rounded-full font-bold border border-amber-200">⏳ รอตรวจสอบ</span>`;
-                        }
-
-                        const tr = `
-                            <tr class="hover:bg-gray-50/80 transition">
-                                <td class="py-3 px-6">
-                                    <img src="${product.image}" class="w-12 h-12 object-cover rounded-lg border shadow-sm">
-                                </td>
-                                <td class="py-3 px-6 font-semibold text-gray-800">${product.name}</td>
-                                <td class="py-3 px-6 font-bold text-purple-950">฿${product.price}</td>
-                                <td class="py-3 px-6 text-gray-500 text-xs">${product.category}</td>
-                                <td class="py-3 px-6 text-center">${statusBadge}</td>
-                                <td class="py-3 px-6 text-center space-x-1 flex items-center justify-center h-16">
-                                    <button onclick="prepareEditProduct('${product.id}')" class="bg-purple-100 hover:bg-purple-200 text-purple-950 text-xs font-bold px-2.5 py-1.5 rounded-md transition border border-purple-200">แก้ไข</button>
-                                    <button onclick="deleteProduct('${product.id}')" class="bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold px-2.5 py-1.5 rounded-md transition border border-red-100">ลบ</button>
-                                </td>
-                            </tr>
-                        `;
-                        tableBody.insertAdjacentHTML('beforeend', tr);
-                    }
-                });
-
-                document.getElementById('product-count').innerText = `${count} รายการ`;
-                if (count === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-gray-400">คุณยังไม่เคยลงขายสินค้าชิ้นใดในระบบ</td></tr>`;
-                }
-            });
-        }
-
-        // ดึงค่าสินค้าเดิมขึ้นมาสลักไว้บนฟอร์มเพื่อแก้ไข
-        function prepareEditProduct(id) {
-            database.ref('products/' + id).once('value', function(snapshot) {
-                const product = snapshot.val();
-                if (!product) return;
-
-                isEditingMode = true;
-                
-                // เปลี่ยนหน้าตาส่วนหัวของฟอร์ม
-                document.getElementById('form-title').innerHTML = `<span>📝</span> กำลังแก้ไขข้อมูลสินค้า [${product.name}]`;
-                document.getElementById('btn-cancel-edit').classList.remove('hidden');
-                document.getElementById('btn-submit-product').innerText = `💾 บันทึกและส่งรีวิวอนุมัติใหม่`;
-                document.getElementById('btn-submit-product').classList.replace('bg-purple-900', 'bg-amber-500');
-                document.getElementById('btn-submit-product').classList.add('text-purple-950');
-
-                // บรรจุข้อมูลเดิมลง Input ฟอร์ม
-                document.getElementById('p-id').value = product.id;
-                document.getElementById('p-name').value = product.name;
-                document.getElementById('p-price').value = product.price;
-                document.getElementById('p-category').value = product.category;
-                document.getElementById('p-desc').value = product.description;
-                document.getElementById('p-contact').value = product.contact;
-
-                // คืนค่าการพรีวิวภาพเดิมที่อัปไว้
-                base64ImageString = product.image;
-                document.getElementById('image-preview').src = product.image;
-                document.getElementById('image-preview-container').classList.remove('hidden');
-                document.getElementById('upload-placeholder').classList.add('hidden');
-                
-                // เลื่อนหน้าจอกลับขึ้นไปด้านบนเพื่อให้เห็นฟอร์มแก้ไขชัดเจน
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            });
-        }
-
-        // ลบสินค้าออกเด็ดขาด
-        function deleteProduct(id) {
-            if (confirm('🚨 คุณแน่ใจหรือไม่ที่จะทำการลบรายการสินค้าชิ้นนี้ออกจากระบบแบบถาวร?')) {
-                database.ref('products/' + id).remove().then(() => {
-                    alert('🗑️ ลบรายการสินค้าเรียบร้อยแล้ว!');
-                    // หากชิ้นที่กำลังลบตรงกับชิ้นที่แก้ไขอยู่ ให้รีเซ็ตฟอร์มด้วย
-                    if(document.getElementById('p-id').value === id) {
-                        resetProductForm();
-                    }
-                });
-            }
-        }
-
-        // ล้างฟอร์มสินค้ากลับสู่สภาพปกติ (โหมดเพิ่มสินค้าใหม่)
-        function resetProductForm() {
-            isEditingMode = false;
-            document.getElementById('product-form').reset();
-            document.getElementById('p-id').value = '';
-            base64ImageString = "";
-            
-            document.getElementById('form-title').innerHTML = `<span>➕</span> ลงทะเบียนขายสินค้าใหม่`;
-            document.getElementById('btn-cancel-edit').classList.add('hidden');
-            document.getElementById('btn-submit-product').innerText = `🚀 ส่งข้อมูลให้สภานักเรียนตรวจสอบ`;
-            document.getElementById('btn-submit-product').className = "w-full bg-purple-900 text-white font-bold py-2 rounded-lg hover:bg-purple-800 transition shadow text-xs border-b-2 border-purple-950";
-            
-            document.getElementById('image-preview-container').classList.add('hidden');
-            document.getElementById('upload-placeholder').classList.remove('hidden');
-        }
-    </script>
+    <script src="seller.js"></script>
 </body>
 </html>

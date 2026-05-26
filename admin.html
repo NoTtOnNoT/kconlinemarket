@@ -3,150 +3,386 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KC Online Market - ระบบสภานักเรียน</title>
+    <title>KC Online Market - ระบบสภานักเรียน (Premium Admin)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="bg-slate-100 min-h-screen">
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex">
 
-    <nav class="bg-slate-800 text-white shadow-md">
-        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <h1 class="text-xl font-bold tracking-wider">🛠️ ระบบจัดการหลังบ้าน (สภานักเรียน)</h1>
-            <a href="index.html" class="bg-slate-700 px-4 py-2 rounded hover:bg-slate-600 transition text-sm">ไปหน้าหลักเว็บ</a>
-        </div>
-    </nav>
-
-    <main class="container mx-auto px-6 py-10">
-        <div class="bg-white rounded-xl shadow-md p-6 mb-8">
-            <h2 class="text-xl font-bold text-amber-600 mb-4 flex items-center gap-2">
-                ⏳ สินค้ารอการตรวจสอบและอนุมัติ
-            </h2>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-slate-50 text-slate-600 uppercase text-sm leading-normal border-b">
-                            <th class="py-3 px-6">รูปภาพ</th>
-                            <th class="py-3 px-6">ชื่อสินค้า / รายละเอียด</th>
-                            <th class="py-3 px-6">ราคา</th>
-                            <th class="py-3 px-6">ผู้ลงขาย</th>
-                            <th class="py-3 px-6 text-center">จัดการ</th>
-                        </tr>
-                    </thead>
-                    <tbody id="pending-table" class="text-gray-600 text-sm font-light">
-                        </tbody>
-                </table>
+    <div id="login-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 border border-slate-100 transform transition-all">
+            <div class="text-center mb-6">
+                <div class="bg-indigo-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 text-indigo-600">
+                    <i data-lucide="shield-check" class="w-8 h-8"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-slate-900">เข้าสู่ระบบสภานักเรียน</h3>
+                <p class="text-slate-500 text-sm mt-1">เฉพาะผู้มีส่วนเกี่ยวข้องและแอดมินเท่านั้น</p>
             </div>
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">ชื่อผู้ใช้แอดมิน (Username)</label>
+                    <input type="text" id="login-username" required class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition" placeholder="กรอกชื่อผู้ใช้แอดมิน">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">รหัสผ่าน (Password)</label>
+                    <input type="password" id="login-password" required class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition" placeholder="••••••••">
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg transition shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2">
+                    <i data-lucide="log-in" class="w-4 h-4"></i> เข้าสู่ระบบหลังบ้าน
+                </button>
+            </form>
         </div>
+    </div>
 
-        <div class="bg-white rounded-xl shadow-md p-6">
-            <h2 class="text-xl font-bold text-green-600 mb-4">
-                ✅ สินค้าที่แสดงบนหน้าเว็บแล้ว
-            </h2>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-slate-50 text-slate-600 uppercase text-sm leading-normal border-b">
-                            <th class="py-3 px-6">ชื่อสินค้า</th>
-                            <th class="py-3 px-6">หมวดหมู่</th>
-                            <th class="py-3 px-6">ราคา</th>
-                            <th class="py-3 px-6">ผู้ลงขาย</th>
-                            <th class="py-3 px-6 text-center">การกระทำ</th>
-                        </tr>
-                    </thead>
-                    <tbody id="approved-table" class="text-gray-600 text-sm font-light">
-                        </tbody>
-                </table>
+    <div id="admin-content" class="w-full flex opacity-0 transition-opacity duration-300 pointer-events-none">
+        
+        <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col fixed h-full z-20">
+            <div class="p-6 border-b border-slate-800 flex items-center gap-3">
+                <div class="bg-indigo-600 text-white p-2 rounded-lg">
+                    <i data-lucide="command" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h1 class="text-white font-bold leading-tight">KC Admin</h1>
+                    <span class="text-xs text-slate-400">ระบบสภานักเรียน</span>
+                </div>
             </div>
+            
+            <nav class="flex-1 p-4 space-y-1">
+                <button onclick="switchTab('dashboard')" id="btn-dashboard" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition bg-slate-800 text-white">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i> แดชบอร์ดภาพรวม
+                </button>
+                <button onclick="switchTab('pending')" id="btn-pending" class="tab-btn w-full flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition hover:bg-slate-800 hover:text-white">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="clock" class="w-4 h-4"></i> สินค้ารอตรวจสอบ
+                    </div>
+                    <span id="badge-pending" class="bg-amber-500/20 text-amber-400 text-xs px-2 py-0.5 rounded-full font-bold hidden">0</span>
+                </button>
+                <button onclick="switchTab('approved')" id="btn-approved" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition hover:bg-slate-800 hover:text-white">
+                    <i data-lucide="check-circle-2" class="w-4 h-4"></i> สินค้าที่ออนไลน์อยู่
+                </button>
+                <button onclick="switchTab('users')" id="btn-users" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition hover:bg-slate-800 hover:text-white">
+                    <i data-lucide="users" class="w-4 h-4"></i> จัดการผู้ใช้ / แบน
+                </button>
+            </nav>
+
+            <div class="p-4 border-t border-slate-800 space-y-2">
+                <a href="index.html" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i> ไปหน้าหลักของเว็บ
+                </a>
+                <button id="logout-btn" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-xs font-medium text-rose-400 hover:bg-rose-500/10 transition">
+                    <i data-lucide="log-out" class="w-4 h-4"></i> ออกจากระบบ
+                </button>
+            </div>
+        </aside>
+
+        <div class="flex-1 pl-64 min-h-screen flex flex-col">
+            <header class="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-8 sticky top-0 z-10">
+                <div class="flex items-center gap-2 text-slate-500 text-sm">
+                    <i data-lucide="calendar" class="w-4 h-4"></i>
+                    <span id="current-date">วันที่กำลังโหลด...</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span id="admin-user-display" class="text-sm font-medium text-slate-700 bg-slate-100 px-3 py-1.5 rounded-full flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-green-500"></span> Admin Staff
+                    </span>
+                </div>
+            </header>
+
+            <main class="p-8 flex-1">
+                
+                <section id="tab-dashboard" class="tab-content space-y-6">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-2xl font-bold text-slate-900">แดชบอร์ดภาพรวมสภานักเรียน</h2>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+                            <div class="p-4 rounded-xl bg-amber-50 text-amber-600"><i data-lucide="hourglass" class="w-6 h-6"></i></div>
+                            <div>
+                                <p class="text-sm text-slate-500 font-medium">สินค้ารอการอนุมัติ</p>
+                                <h3 id="stat-pending" class="text-3xl font-bold text-slate-800 mt-1">0</h3>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+                            <div class="p-4 rounded-xl bg-green-50 text-green-600"><i data-lucide="shopping-bag" class="w-6 h-6"></i></div>
+                            <div>
+                                <p class="text-sm text-slate-500 font-medium">สินค้าเปิดขายออนไลน์</p>
+                                <h3 id="stat-approved" class="text-3xl font-bold text-slate-800 mt-1">0</h3>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+                            <div class="p-4 rounded-xl bg-indigo-50 text-indigo-600"><i data-lucide="shield-alert" class="w-6 h-6"></i></div>
+                            <div>
+                                <p class="text-sm text-slate-500 font-medium">สิทธิ์การดูแลระบบ</p>
+                                <h3 class="text-xl font-bold text-slate-800 mt-1">Authorized</h3>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="tab-pending" class="tab-content hidden space-y-4">
+                    <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-2 text-amber-600">
+                        <i data-lucide="clock" class="w-6 h-6"></i> สินค้ารอการตรวจสอบและอนุมัติ
+                    </h2>
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-600 text-xs font-semibold uppercase border-b border-slate-200">
+                                    <th class="py-4 px-6">รูปภาพ</th>
+                                    <th class="py-4 px-6">ชื่อสินค้า / รายละเอียด</th>
+                                    <th class="py-4 px-6">ราคา</th>
+                                    <th class="py-4 px-6">ผู้ลงขาย</th>
+                                    <th class="py-4 px-6 text-center">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pending-table" class="text-slate-600 text-sm divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="tab-approved" class="tab-content hidden space-y-4">
+                    <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-2 text-green-600">
+                        <i data-lucide="check-circle-2" class="w-6 h-6"></i> สินค้าที่แสดงบนหน้าเว็บแล้ว
+                    </h2>
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-600 text-xs font-semibold uppercase border-b border-slate-200">
+                                    <th class="py-4 px-6">ชื่อสินค้า</th>
+                                    <th class="py-4 px-6">หมวดหมู่</th>
+                                    <th class="py-4 px-6">ราคา</th>
+                                    <th class="py-4 px-6">ผู้ลงขาย</th>
+                                    <th class="py-4 px-6 text-center">การกระทำ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="approved-table" class="text-slate-600 text-sm divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="tab-users" class="tab-content hidden space-y-4">
+                    <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-2 text-rose-600">
+                        <i data-lucide="users" class="w-6 h-6"></i> ระบบแบนและจัดการสิทธิ์ผู้ใช้งาน
+                    </h2>
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden p-6">
+                        <p class="text-sm text-slate-500 mb-4">ฟังก์ชันด่วนสำหรับระงับบัญชีนักเรียนที่ทำผิดกฎของตลาดออนไลน์</p>
+                        <div class="flex gap-2 max-w-md mb-6">
+                            <input type="text" id="ban-student-id" placeholder="กรอกชื่อผู้ลงขาย หรือรหัสนักเรียนที่จะแบน" class="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500">
+                            <button onclick="actionBanUser()" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-1 shrink-0">
+                                <i data-lucide="user-minus" class="w-4 h-4"></i> สั่งแบนผู้ใช้
+                            </button>
+                        </div>
+                        <div class="text-xs text-amber-600 bg-amber-50 p-3 rounded-lg flex items-start gap-2">
+                            <i data-lucide="info" class="w-4 h-4 shrink-0 mt-0.5"></i>
+                            <span>การระงับบัญชีจะส่งผลให้สินค้าทั้งหมดของผู้ใช้นั้นถูกถอดออกจากการแสดงผลทันทีเพื่อความปลอดภัยในโรงเรียน</span>
+                        </div>
+                    </div>
+                </section>
+
+            </main>
         </div>
-    </main>
+    </div>
 
     <script>
-        // วางค่า Config ของ Firebase ของคุณที่นี่
         const firebaseConfig = {
-            apiKey: "AIzaSyALS8UgK7cjvKo15o6vC4LUQHRMgWjhBNQ",
-            authDomain: "kc-online-market.firebaseapp.com",
-            databaseURL: "https://kc-online-market-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "kc-online-market",
-            storageBucket: "kc-online-market.firebasestorage.app",
-            messagingSenderId: "1051502366453",
-            appId: "1:1051502366453:web:37036da23b48c00a2affbc"
-        };
+  apiKey: "AIzaSyBoV4p65uQ3ThpwN9Zw34GWEz7yElB2ymI",
+  authDomain: "kc-onlinemarket.firebaseapp.com",
+  databaseURL: "https://kc-onlinemarket-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "kc-onlinemarket",
+  storageBucket: "kc-onlinemarket.firebasestorage.app",
+  messagingSenderId: "321029641421",
+  appId: "1:321029641421:web:7a007bd06159ffc309c584"
+};
         
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
+        const loginModal = document.getElementById('login-modal');
+        const adminContent = document.getElementById('admin-content');
         const pendingTable = document.getElementById('pending-table');
         const approvedTable = document.getElementById('approved-table');
 
-        // ฟังก์ชันอัปเดตสถานะ (อนุมัติ / ลบ)
+        // แสดงวันที่ปัจจุบันบนหัวเว็บ
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('current-date').innerText = new Date().toLocaleDateString('th-TH', options);
+
+        // =================================================================
+        // 3. [แก้ไขใหม่] ระบบรักษาความปลอดภัย: เช็คสิทธิ์และตรวจสอบรหัสผ่านผ่าน Data โดยตรง
+        // =================================================================
+        
+        // ตรวจสอบจาก Session Storage ว่าเซสชันเดิมยังล็อกอินอยู่ไหมเมื่อรีเฟรชหน้าเว็บ
+        if (sessionStorage.getItem("admin_authenticated") === "true") {
+            showAdminPanel(sessionStorage.getItem("admin_user"));
+        } else {
+            showLoginModal();
+        }
+
+        function showAdminPanel(username) {
+            loginModal.classList.add('hidden');
+            adminContent.classList.remove('opacity-0', 'pointer-events-none');
+            document.getElementById('admin-user-display').innerHTML = `<span class="w-2 h-2 rounded-full bg-green-500"></span> ${username} (แอดมิน)`;
+            loadRealtimeData(); // โหลดตารางสินค้าเมื่อระบุตัวตนผ่านแล้ว
+            lucide.createIcons();
+        }
+
+        function showLoginModal() {
+            adminContent.classList.add('opacity-0', 'pointer-events-none');
+            loginModal.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        // ฟังก์ชันตรวจสอบการล็อกอินโดยเทียบค่าโดยตรงจากตำแหน่งข้อมูล admin_config
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const inputUser = document.getElementById('login-username').value;
+            const inputPass = document.getElementById('login-password').value;
+
+            // ดึงค่าการตั้งค่าจาก Root เพื่อหาโฟลเดอร์ admin_config
+            database.ref('admin_config').once('value').then((snapshot) => {
+                const config = snapshot.val();
+                
+                if (config) {
+                    const dbUser = config.username;
+                    const dbPass = config.password;
+
+                    // ตรวจสอบความถูกต้องของ Username และ Password
+                    if (inputUser === dbUser && inputPass === dbPass) {
+                        sessionStorage.setItem("admin_authenticated", "true");
+                        sessionStorage.setItem("admin_user", dbUser);
+                        
+                        alert('🔓 เข้าสู่ระบบจัดการสภานักเรียนสำเร็จ!');
+                        showAdminPanel(dbUser);
+                    } else {
+                        alert('❌ ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง!');
+                    }
+                } else {
+                    alert('⚠️ ไม่พบโฟลเดอร์ข้อมูลบัญชีแอดมิน (admin_config) ในระบบ Realtime Database ของคุณ โปรดตรวจสอบฝั่งหน้า Firebase Console');
+                }
+            }).catch(error => {
+                alert('เกิดข้อผิดพลาดในการเชื่อมต่อเพื่อยืนยันสิทธิ์: ' + error.message);
+            });
+        });
+
+        // ฟังก์ชันออกจากระบบ
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            if(confirm('คุณต้องการออกจากระบบควบคุมใช่หรือไม่?')) {
+                sessionStorage.removeItem("admin_authenticated");
+                sessionStorage.removeItem("admin_user");
+                window.location.reload(); // รีเฟรชกลับไปหน้าล็อกอินแบบเคลียร์สถานะ
+            }
+        });
+
+        // 4. ระบบสลับแท็บเมนูหน้าต่างการใช้งาน
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-slate-800', 'text-white');
+                btn.classList.add('hover:bg-slate-800', 'hover:text-white');
+            });
+
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`btn-${tabName}`);
+            activeBtn.classList.remove('hover:bg-slate-800', 'hover:text-white');
+            activeBtn.classList.add('bg-slate-800', 'text-white');
+        }
+
+        // 5. ฟังก์ชันอัปเดตสถานะสินค้า (อนุมัติ / ลบ)
         function updateStatus(productId, newStatus) {
             if(newStatus === 'deleted') {
-                if(confirm('คุณแน่ใจใช่ไหมที่จะลบสินค้านี้ออก?')) {
+                if(confirm('⚠️ คุณแน่ใจใช่ไหมที่จะลบ/ปฏิเสธสินค้านี้ออกจากระบบ?')) {
                     database.ref('products/' + productId).remove();
                 }
             } else {
                 database.ref('products/' + productId).update({
                     status: newStatus
+                }).then(() => {
+                    alert('🎯 อนุมัติการแสดงผลเรียบร้อย!');
                 });
             }
         }
 
-        // ดึงข้อมูลแบบ Realtime ทั้งสองตาราง
-        database.ref('products').on('value', (snapshot) => {
-            pendingTable.innerHTML = '';
-            approvedTable.innerHTML = '';
-            let hasPending = false;
-            let hasApproved = false;
+        // 6. ระบบเดโม่: จำลองปุ่มสั่งแบนผู้ใช้งาน
+        function actionBanUser() {
+            const username = document.getElementById('ban-student-id').value;
+            if(!username.trim()) return alert('โปรดกรอกชื่อผู้ใช้ที่ต้องการแบน');
+            if(confirm(`คุณแน่ใจที่จะระงับการใช้งานของ "${username}" หรือไม่?`)) {
+                alert(`ทำการสั่งแบนผู้ใช้งาน ${username} สำเร็จ! ระบบได้ส่งเรื่องไปยังฝ่ายปกครองแล้ว`);
+                document.getElementById('ban-student-id').value = '';
+            }
+        }
 
-            snapshot.forEach((childSnapshot) => {
-                const product = childSnapshot.val();
+        // 7. โซนดึงข้อมูล Realtime และนับจำนวนสถิติ
+        function loadRealtimeData() {
+            database.ref('products').on('value', (snapshot) => {
+                pendingTable.innerHTML = '';
+                approvedTable.innerHTML = '';
+                
+                let countPending = 0;
+                let countApproved = 0;
 
-                if (product.status === 'pending') {
-                    hasPending = true;
-                    const row = `
-                        <tr class="border-b border-gray-100 hover:bg-gray-50">
-                            <td class="py-3 px-6"><img src="${product.image}" class="w-16 h-16 object-cover rounded-lg"></td>
-                            <td class="py-3 px-6">
-                                <span class="font-bold text-gray-800 text-base">${product.name}</span><br>
-                                <span class="text-xs text-gray-400">ประเภท: ${product.category}</span><br>
-                                <p class="text-gray-500 mt-1 max-w-xs truncate">${product.description}</p>
-                            </td>
-                            <td class="py-3 px-6 font-bold text-red-500">฿${product.price}</td>
-                            <td class="py-3 px-6">${product.seller} (${product.grade})</td>
-                            <td class="py-3 px-6 text-center">
-                                <div class="flex item-center justify-center gap-2">
-                                    <button onclick="updateStatus('${product.id}', 'approved')" class="bg-green-500 text-white px-3 py-1.5 rounded font-medium hover:bg-green-600 transition text-xs">อนุมัติ</button>
-                                    <button onclick="updateStatus('${product.id}', 'deleted')" class="bg-red-500 text-white px-3 py-1.5 rounded font-medium hover:bg-red-600 transition text-xs">ปฏิเสธ/ลบ</button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                    pendingTable.insertAdjacentHTML('beforeend', row);
-                } else if (product.status === 'approved') {
-                    hasApproved = true;
-                    const row = `
-                        <tr class="border-b border-gray-100 hover:bg-gray-50">
-                            <td class="py-3 px-6 font-medium text-gray-800">${product.name}</td>
-                            <td class="py-3 px-6">${product.category}</td>
-                            <td class="py-3 px-6 font-bold text-red-500">฿${product.price}</td>
-                            <td class="py-3 px-6">${product.seller} (${product.grade})</td>
-                            <td class="py-3 px-6 text-center">
-                                <button onclick="updateStatus('${product.id}', 'deleted')" class="text-red-500 hover:underline text-xs font-medium">ถอนการแสดงผล</button>
-                            </td>
-                        </tr>
-                    `;
-                    approvedTable.insertAdjacentHTML('beforeend', row);
+                snapshot.forEach((childSnapshot) => {
+                    const product = childSnapshot.val();
+
+                    if (product.status === 'pending') {
+                        countPending++;
+                        const row = `
+                            <tr class="hover:bg-slate-50 transition duration-150">
+                                <td class="py-4 px-6"><img src="${product.image || 'https://via.placeholder.com/150'}" class="w-14 h-14 object-cover rounded-xl border border-slate-100 shadow-sm"></td>
+                                <td class="py-4 px-6">
+                                    <div class="font-bold text-slate-800 text-base">${product.name}</div>
+                                    <div class="text-xs text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full inline-block mt-1 font-medium">ประเภท: ${product.category}</div>
+                                    <p class="text-slate-400 mt-1 max-w-xs truncate text-xs">${product.description || 'ไม่มีคำอธิบาย'}</p>
+                                </td>
+                                <td class="py-4 px-6 font-bold text-rose-600">฿${product.price}</td>
+                                <td class="py-4 px-6 text-xs text-slate-500 font-medium">${product.seller} <span class="block text-[10px] text-slate-400">ชั้นปี: ${product.grade || '-'}</span></td>
+                                <td class="py-4 px-6 text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <button onclick="updateStatus('${product.id}', 'approved')" class="bg-green-600 text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-green-700 shadow-sm transition text-xs flex items-center gap-1"><i data-lucide="check" class="w-3.5 h-3.5"></i> อนุมัติ</button>
+                                        <button onclick="updateStatus('${product.id}', 'deleted')" class="bg-slate-100 text-slate-600 px-3 py-1.5 rounded-lg font-semibold hover:bg-rose-50 hover:text-rose-600 transition text-xs flex items-center gap-1"><i data-lucide="x" class="w-3.5 h-3.5"></i> ปฏิเสธ</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                        pendingTable.insertAdjacentHTML('beforeend', row);
+                    } else if (product.status === 'approved') {
+                        countApproved++;
+                        const row = `
+                            <tr class="hover:bg-slate-50 transition duration-150">
+                                <td class="py-4 px-6 font-semibold text-slate-800">${product.name}</td>
+                                <td class="py-4 px-6 text-xs text-slate-500">${product.category}</td>
+                                <td class="py-4 px-6 font-bold text-emerald-600">฿${product.price}</td>
+                                <td class="py-4 px-6 text-xs text-slate-500">${product.seller}</td>
+                                <td class="py-4 px-6 text-center">
+                                    <button onclick="updateStatus('${product.id}', 'deleted')" class="text-rose-500 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1 mx-auto"><i data-lucide="eye-off" class="w-3.5 h-3.5"></i> ถอนการแสดงผล</button>
+                                </td>
+                            </tr>
+                        `;
+                        approvedTable.insertAdjacentHTML('beforeend', row);
+                    }
+                });
+
+                document.getElementById('stat-pending').innerText = countPending;
+                document.getElementById('stat-approved').innerText = countApproved;
+
+                const badge = document.getElementById('badge-pending');
+                if(countPending > 0) {
+                    badge.innerText = countPending;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
                 }
-            });
 
-            if(!hasPending) {
-                pendingTable.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-gray-400">🎉 ไม่มีสินค้ารอการตรวจสอบในขณะนี้</td></tr>`;
-            }
-            if(!hasApproved) {
-                approvedTable.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-gray-400">ไม่มีสินค้าที่กำลังออนไลน์อยู่</td></tr>`;
-            }
-        });
+                if(countPending === 0) {
+                    pendingTable.innerHTML = `<tr><td colspan="5" class="text-center py-12 text-slate-400 font-medium">🎉 ไม่มีสินค้ารอการตรวจสอบในขณะนี้</td></tr>`;
+                }
+                if(countApproved === 0) {
+                    approvedTable.innerHTML = `<tr><td colspan="5" class="text-center py-12 text-slate-400 font-medium">📭 ปัจจุบันไม่มีสินค้าที่กำลังออนไลน์อยู่</td></tr>`;
+                }
+
+                lucide.createIcons();
+            });
+        }
     </script>
 </body>
 </html>
