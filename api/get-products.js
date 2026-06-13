@@ -1,26 +1,32 @@
 // api/get-products.js
-import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, get } from 'firebase/database';
-
-// คีย์ทั้งหมดจะถูกเรียกใช้บน Server ของ Vercel เท่านั้น ไม่มีวันหลุดไปที่หน้าเว็บ
-const firebaseConfig = {
-    apiKey: process.env.FIREBASE_API_KEY,
-    databaseURL: process.env.FIREBASE_DATABASE_URL,
-    // ... ใส่ให้ครบตัวแปรระบบของ Node.js จะใช้ process.env
-};
-
-const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
-
 export default async function handler(req, res) {
+    // กำหนดค่า Firebase Config จาก Environment Variables ของ Node.js (จะใช้ process.env)
+    const firebaseConfig = {
+        apiKey: process.env.FIREBASE_API_KEY,
+        authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+        databaseURL: process.env.FIREBASE_DATABASE_URL,
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+        messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+        appId: process.env.FIREBASE_APP_ID
+    };
+
+    // ดึงข้อมูลตาราง products และ users จาก Realtime Database ผ่าน REST API ของ Firebase
     try {
-        const snapshot = await get(ref(database, 'products'));
-        if (snapshot.exists()) {
-            res.status(200).json(snapshot.val());
-        } else {
-            res.status(200).json({});
-        }
+        // ดึงข้อมูลสินค้า
+        const productsRes = await fetch(`${firebaseConfig.databaseURL}/products.json`);
+        const productsData = await productsRes.json();
+
+        // ดึงข้อมูลผู้ใช้เพื่อเอามาเช็คสถานะโดนแบน
+        const usersRes = await fetch(`${firebaseConfig.databaseURL}/users.json`);
+        const usersData = await usersRes.json();
+
+        // ส่งข้อมูลทั้งสองตารางกลับไปให้หน้าเว็บ (Frontend)
+        return res.status(200).json({
+            products: productsData || {},
+            users: usersData || {}
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 }
