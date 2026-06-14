@@ -1,15 +1,15 @@
 // Initialize Lucide Icons
-if (typeof lucide !== 'undefined') lucide.createIcons();
+lucide.createIcons();
 
-// Firebase Configuration (ดึงค่าอย่างปลอดภัยจาก Environment Variables ผ่าน Vite/Vercel)
+// Firebase Configuration (เชื่อมต่อตรงสำหรับใช้ทดสอบบนเครื่องคอมพิวเตอร์)
 const firebaseConfig = {
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-    databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
-    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-    appId: import.meta.env.VITE_FIREBASE_APP_ID
+    apiKey: "AIzaSyBoV4p65uQ3ThpwN9Zw34GWEz7yElB2ymI",
+    authDomain: "kc-onlinemarket.firebaseapp.com",
+    databaseURL: "https://kc-onlinemarket-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "kc-onlinemarket",
+    storageBucket: "kc-onlinemarket.firebasestorage.app",
+    messagingSenderId: "321029641421",
+    appId: "1:321029641421:web:7a007bd06159ffc309c584"
 };
 
 // Initialize Firebase
@@ -24,19 +24,19 @@ let currentProductPhotos = [];
 let currentCarouselIndex = 0;
 let currentFullscreenIndex = 0;
 
-// 🔥 Realtime listener for approved products (พร้อมระบบกรองบัญชีที่ถูกแบนแบบ Realtime)
+// 🔥 Realtime listener for approved products (แก้ไขให้ดึงข้อมูล ชื่อ และ ชั้น/ห้อง จากข้อมูลผู้ใช้ปัจจุบันแบบ Realtime)
 database.ref('products').on('value', (snapshot) => {
-    // 1. สร้าง Object สำหรับเก็บข้อมูล Listener ของผู้ใช้แต่ละคน เพื่อไม่ให้เกิดการผูก Listener ซ้ำซ้อน
+    // 1. สร้าง Object สำหรับเก็บข้อมูล Listener และข้อมูลโปรไฟล์ปัจจุบันของผู้ใช้
     if (!window.activeUserListeners) {
         window.activeUserListeners = {};
     }
     
     localProducts = {};
-    const currentContainer = document.getElementById('products-container');
-    if (!currentContainer) return;
+    const productsContainer = document.getElementById('products-container');
+    if (!productsContainer) return;
 
     // เคลียร์หน้าจอเตรียมวาดใหม่เมื่อโครงสร้างหลักตารางสินค้าขยับ
-    currentContainer.innerHTML = '';
+    productsContainer.innerHTML = '';
 
     const allProducts = [];
     snapshot.forEach((childSnapshot) => {
@@ -52,28 +52,38 @@ database.ref('products').on('value', (snapshot) => {
         return;
     }
 
-    // ฟังก์ชันจัดการอัปเดต UI หน้าจอสินค้าแบบแยกส่วน (Granular Update) ตามสถานะจริงของผู้ใช้
+    // ฟังก์ชันจัดการอัปเดต UI หน้าจอสินค้าแบบแยกส่วนตามสถานะและข้อมูลโปรไฟล์จริงของผู้ใช้ปัจจุบัน
     function renderMarketplace() {
-        currentContainer.innerHTML = '';
+        productsContainer.innerHTML = '';
         let hasDisplayedProducts = false;
 
         allProducts.forEach((item) => {
             const product = item.data;
             const productKey = item.key;
             
-            // ดึงสถานะผู้ใช้ล่าสุดที่เก็บไว้ใน Window Object มาเช็ค
-            const userStatus = window.activeUserListeners[product.studentId]?.status;
+            // ดึงข้อมูลผู้ใช้ปัจจุบันจากท่อดักฟัง Realtime
+            const cachedUser = window.activeUserListeners[product.studentId] || {};
+            const userStatus = cachedUser.status || 'normal';
             const isSellerBanned = userStatus === 'banned';
+
+            // ดึงข้อมูล "ระดับชั้น" และ "ชื่อ" ปัจจุบันของผู้ใช้ (ถ้ายังไม่โหลดมาให้ใช้ค่าเริ่มต้นในสินค้าไปก่อน)
+            const liveGrade = cachedUser.grade || product.grade || '-';
+            const liveSellerName = cachedUser.name || product.seller || 'ผู้ขาย';
 
             if (!isSellerBanned) {
                 hasDisplayedProducts = true;
-                localProducts[productKey] = product; // เก็บลงคลังเพื่อไว้เปิดดู Modal
+                
+                // เก็บลงคลังเพื่อไว้เปิดดูใน Modal โดยอัปเดตข้อมูลผู้ขายให้สดใหม่ที่สุดด้วย
+                localProducts[productKey] = {
+                    ...product,
+                    grade: liveGrade,
+                    seller: liveSellerName
+                };
 
                 const fallbackImage = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500';
                 const displayImage = product.image || fallbackImage;
                 const totalImgs = product.images ? (Array.isArray(product.images) ? product.images.length : Object.keys(product.images).length) : 1;
 
-                // สร้าง ID เฉพาะให้กับการ์ดสินค้าชิ้นนั้นๆ เพื่อจัดการง่ายขึ้น
                 const productCard = `
                     <div id="card-${productKey}" onclick="openModal('${productKey}')" class="bg-white rounded-xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between cursor-pointer group animate-fade-in">
                         <div class="relative h-44 bg-slate-50 overflow-hidden shrink-0">
@@ -92,12 +102,12 @@ database.ref('products').on('value', (snapshot) => {
                             </div>
                             <div class="flex justify-between items-center pt-1.5 border-t border-slate-50">
                                 <span class="text-sm font-bold text-purple-700">฿${product.price}</span>
-                                <span class="text-[10px] bg-slate-100 text-slate-600 font-medium px-1.5 py-0.5 rounded">ชั้น ${product.grade || '-'}</span>
+                                <span class="text-[10px] bg-slate-100 text-slate-600 font-medium px-1.5 py-0.5 rounded">ชั้น ${liveGrade}</span>
                             </div>
                         </div>
                     </div>
                 `;
-                currentContainer.insertAdjacentHTML('beforeend', productCard);
+                productsContainer.insertAdjacentHTML('beforeend', productCard);
             }
         });
 
@@ -112,18 +122,33 @@ database.ref('products').on('value', (snapshot) => {
     allProducts.forEach((item) => {
         const studentId = item.data.studentId;
 
-        // ถ้ายังไม่เคยเปิดท่อดักฟังผู้ใช้รหัสนี้ ให้เปิดท่อทันที
+        // ถ้ายังไม่เคยเปิดท่อดักฟังผู้ใช้รหัสนี้ ให้ทำการเปิดท่อดักฟังข้อมูลโปรไฟล์ (รวมถึงข้อมูลชั้น/ห้อง) ทันที
         if (!window.activeUserListeners[studentId]) {
-            window.activeUserListeners[studentId] = { status: 'normal', ref: database.ref('users/' + studentId) };
+            window.activeUserListeners[studentId] = { 
+                status: 'normal', 
+                grade: item.data.grade || '-', 
+                name: item.data.seller || 'ผู้ขาย',
+                ref: database.ref('users/' + studentId) 
+            };
             
             window.activeUserListeners[studentId].ref.on('value', (userSnapshot) => {
                 const userData = userSnapshot.val();
-                const currentStatus = userData ? userData.status : 'normal';
                 
-                // ตรวจสอบความเปลี่ยนแปลง: ถ้าสถานะเปลี่ยนไปจากเดิมให้ทำการ Render ตลาดใหม่ทันที
-                if (window.activeUserListeners[studentId].status !== currentStatus) {
+                const currentStatus = userData ? userData.status : 'normal';
+                const currentGrade = userData ? userData.grade : (item.data.grade || '-');
+                const currentName = userData ? userData.name : (item.data.seller || 'ผู้ขาย');
+                
+                // ตรวจสอบความเปลี่ยนแปลง: ถ้าสถานะ, ระดับชั้น, หรือชื่อผู้ขายเปลี่ยนไป ให้ Render ตลาดอัปเดตหน้าจอทันที!
+                if (
+                    window.activeUserListeners[studentId].status !== currentStatus ||
+                    window.activeUserListeners[studentId].grade !== currentGrade ||
+                    window.activeUserListeners[studentId].name !== currentName
+                ) {
                     window.activeUserListeners[studentId].status = currentStatus;
-                    renderMarketplace(); // ทำงานทันทีโดยไม่ต้องรีเฟรชหน้าจอ!
+                    window.activeUserListeners[studentId].grade = currentGrade;
+                    window.activeUserListeners[studentId].name = currentName;
+                    
+                    renderMarketplace(); // รีเพนท์และวาดข้อมูลการ์ดใหม่บนหน้าเว็บแบบสดๆ ทันที
                 }
             });
         }
@@ -135,9 +160,9 @@ database.ref('products').on('value', (snapshot) => {
 
 // ฟังก์ชันแสดงกรณีตลาดไม่มีสินค้าจำหน่าย
 function showEmptyMarket() {
-    const currentContainer = document.getElementById('products-container');
-    if (!currentContainer) return;
-    currentContainer.innerHTML = `
+    const productsContainer = document.getElementById('products-container');
+    if (!productsContainer) return;
+    productsContainer.innerHTML = `
         <div class="col-span-full text-center py-12 bg-white rounded-xl border border-dashed border-slate-200 p-6 text-slate-400">
             <i data-lucide="package-open" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
             <p class="text-xs font-medium">ยังไม่มีสินค้าวางจำหน่ายในขณะนี้</p>
@@ -146,8 +171,8 @@ function showEmptyMarket() {
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
-// ฟังก์ชันสำหรับเปิด Pop-up สินค้า
-window.openModal = function(id) {
+// ฟังก์ชันสำหรับเปิด Pop-up สินค้า (ดึงค่าโปรไฟล์ล่าสุดที่เราอัปเดตแบบ Realtime มาพ่นใส่)
+function openModal(id) {
     const product = localProducts[id];
     if (!product) return;
 
@@ -172,6 +197,8 @@ window.openModal = function(id) {
     document.getElementById('modal-name').innerText = product.name;
     document.getElementById('modal-price').innerText = product.price;
     document.getElementById('modal-description').innerText = product.description || 'ไม่มีรายละเอียดสินค้า';
+    
+    // แสดงผลข้อมูลล่าสุดจากผู้ใช้งานจริง
     document.getElementById('modal-seller').innerText = product.seller;
     document.getElementById('modal-grade').innerText = product.grade;
 
@@ -215,13 +242,13 @@ window.openModal = function(id) {
         modal.classList.remove('hidden');
         setTimeout(() => {
             modal.classList.remove('opacity-0');
-            const innerTransform = modal.querySelector('.transform');
+            const innerTransform = modal.querySelector('.transform') || modal.querySelector('[class*="scale-"]');
             if (innerTransform) innerTransform.classList.remove('scale-95');
         }, 10);
     }
     
     if (typeof lucide !== 'undefined') lucide.createIcons();
-};
+}
 
 // 🎞️ ระบบสร้างกล่องสไลด์รูปภาพ (Carousel) ด้านล่าง
 function setupCarousel() {
@@ -263,12 +290,12 @@ function setupCarousel() {
     updateCarouselView();
 }
 
-window.moveCarousel = function(direction) {
+function moveCarousel(direction) {
     currentCarouselIndex += direction;
     if (currentCarouselIndex >= currentProductPhotos.length) currentCarouselIndex = 0;
     if (currentCarouselIndex < 0) currentCarouselIndex = currentProductPhotos.length - 1;
     updateCarouselView();
-};
+}
 
 function jumpToSlide(index) {
     currentCarouselIndex = index;
@@ -292,7 +319,7 @@ function updateCarouselView() {
 }
 
 // 🌌 ระบบเปิดดูรูปทั้งหมดแบบขยายเต็มหน้าจอ (Fullscreen Gallery)
-window.openFullscreenGallery = function(startIndex = 0) {
+function openFullscreenGallery(startIndex = 0) {
     currentFullscreenIndex = startIndex;
     
     const fsModal = document.getElementById('fullscreen-gallery-modal');
@@ -303,13 +330,13 @@ window.openFullscreenGallery = function(startIndex = 0) {
     setupFullscreenThumbnails();
     updateFullscreenView();
     if (typeof lucide !== 'undefined') lucide.createIcons();
-};
+}
 
 function updateFullscreenView() {
     const fsImage = document.getElementById('fullscreen-image');
     const fsCounter = document.getElementById('fullscreen-counter');
     const fsThumbs = document.getElementById('fullscreen-thumbnails');
-    
+
     if (fsImage) fsImage.src = currentProductPhotos[currentFullscreenIndex];
     if (fsCounter) fsCounter.innerText = `รูปที่ ${currentFullscreenIndex + 1}/${currentProductPhotos.length}`;
     
@@ -325,12 +352,12 @@ function updateFullscreenView() {
     }
 }
 
-window.moveFullscreen = function(direction) {
+function moveFullscreen(direction) {
     currentFullscreenIndex += direction;
     if (currentFullscreenIndex >= currentProductPhotos.length) currentFullscreenIndex = 0;
     if (currentFullscreenIndex < 0) currentFullscreenIndex = currentProductPhotos.length - 1;
     updateFullscreenView();
-};
+}
 
 function setupFullscreenThumbnails() {
     const thumbContainer = document.getElementById('fullscreen-thumbnails');
@@ -349,32 +376,34 @@ function setupFullscreenThumbnails() {
     });
 }
 
-window.closeFullscreenGallery = function() {
+function closeFullscreenGallery() {
     const fsModal = document.getElementById('fullscreen-gallery-modal');
     if (!fsModal) return;
     fsModal.classList.add('opacity-0');
-    setTimeout(() => fsModal.add ? fsModal.add('hidden') : fsModal.classList.add('hidden'), 300);
-};
+    setTimeout(() => fsModal.classList.add('hidden'), 300);
+}
 
-window.closeModal = function() {
+function closeModal() {
     const modal = document.getElementById('product-modal');
     if (!modal) return;
     modal.classList.add('opacity-0');
-    const innerTransform = modal.querySelector('.transform');
+    
+    const innerTransform = modal.querySelector('.transform') || modal.querySelector('[class*="scale-"]');
     if (innerTransform) innerTransform.classList.add('scale-95');
+    
     setTimeout(() => {
         modal.classList.add('hidden');
     }, 300);
-};
+}
 
 window.onclick = function(event) {
     const modal = document.getElementById('product-modal');
     const fsModal = document.getElementById('fullscreen-gallery-modal');
     
-    if (event.target === modal) {
-        window.closeModal();
+    if (event.target == modal) {
+        closeModal();
     }
-    if (event.target === fsModal) {
-        window.closeFullscreenGallery();
+    if (event.target == fsModal) {
+        closeFullscreenGallery();
     }
-};
+}

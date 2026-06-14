@@ -21,3 +21,175 @@
         opacity: 0;
     }
 }
+
+/* ==========================================================================
+   1. Base Responsive & Smooth Scrolling
+   ========================================================================== */
+html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%; /* ป้องกันฟอนต์ขยายผิดปกติบน iOS */
+}
+
+body {
+    /* ปรับแต่งความลื่นไหลในการลากนิ้วบนมือถือ */
+    -webkit-overflow-scrolling: touch; 
+}
+
+/* ==========================================================================
+   2. Fix Responsive Navigation Bar (สำหรับจอมือถือเล็กๆ)
+   ========================================================================== */
+@media (max-width: 640px) {
+    nav .container {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+        flex-direction: column; /* ปรับให้โลโก้อยู่บน ปุ่มอยู่ล่างถ้าจอแคบมากๆ */
+        gap: 0.75rem;
+    }
+    
+    nav h1 {
+        font-size: 1.25rem !important; /* ลดขนาดชื่อเว็บลงบนมือถือ */
+    }
+}
+
+/* ==========================================================================
+   3. Custom Tab Buttons Scroll (กรณีปุ่มแท็บยาวเกินหน้าจอมือถือ)
+   ========================================================================== */
+@media (max-width: 768px) {
+    .flex.flex-wrap.border-b {
+        flex-wrap: nowrap !important; /* บังคับให้อยู่แถวเดียวกัน */
+        overflow-x: auto; /* เปิดให้เลื่อนซ้าย-ขวาได้ */
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 4px;
+        scrollbar-width: none; /* ซ่อนแถบเลื่อนบน Firefox */
+    }
+    
+    .flex.flex-wrap.border-b::-webkit-scrollbar {
+        display: none; /* ซ่อนแถบเลื่อนบน Chrome/Safari */
+    }
+
+    .tab-btn {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+        font-size: 0.8rem !important;
+        flex-shrink: 0; /* ป้องกันปุ่มโดนบีบจนตัวหนังสือเบี้ยว */
+    }
+}
+
+/* ==========================================================================
+   4. Advanced Mobile Responsive Table (เปลี่ยนตารางเป็นแบบ Card บนมือถือ)
+   ========================================================================== */
+@media (max-width: 768px) {
+    /* ซ่อนหัวตารางเดิมที่ไม่จำเป็นบนมือถือ */
+    table, thead, tbody, th, td, tr {
+        display: block;
+    }
+    
+    thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+    
+    /* จัดการแถวตารางให้กลายเป็นกล่อง (Card) */
+    #my-products-list tr {
+        background: #ffffff;
+        border: 1px solid #f3e8ff; /* สีกรอบม่วงอ่อน */
+        border-radius: 1rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    }
+
+    /* จัดข้อมูลในแต่ละช่องให้เรียงเป็นบรรทัดสวยงาม */
+    #my-products-list td {
+        border: none;
+        position: relative;
+        padding-left: 45% !important; /* เว้นที่ว่างด้านซ้ายไว้ใส่หัวข้อ */
+        padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
+        text-align: right; /* ให้ข้อมูลจริงชิดขวา */
+        width: 100% !important;
+    }
+    
+    /* ข้อยกเว้น: ให้รูปภาพแสดงตรงกลางเด่นๆ */
+    #my-products-list td:first-child {
+        padding-left: 0 !important;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        border-bottom: 1px dashed #f3e8ff;
+        padding-bottom: 0.75rem !important;
+        margin-bottom: 0.5rem;
+    }
+
+    /* ใช้ pseudo-element ใส่ชื่อหัวข้อจำลองไว้ด้านซ้ายมือ */
+    #my-products-list td:nth-child(2)::before { content: "📦 ชื่อสินค้า:"; }
+    #my-products-list td:nth-child(3)::before { content: "💰 ราคา:"; }
+    #my-products-list td:nth-child(4)::before { content: "🗂️ หมวดหมู่:"; }
+    #my-products-list td:nth-child(5)::before { content: "🟢 สถานะ:"; }
+    #my-products-list td:nth-child(6)::before { content: "⚙️ การจัดการ:"; }
+    
+    #my-products-list td::before {
+        position: absolute;
+        left: 1rem;
+        width: 40%;
+        text-align: left;
+        font-weight: 700;
+        color: #581c87; /* สีม่วงเข้มเข้ม */
+    }
+
+    /* ปรับปุ่มกดในช่องจัดการให้เต็มความกว้างและกดง่ายขึ้น */
+    #my-products-list td:last-child {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+        padding-top: 0.75rem !important;
+        border-top: 1px dashed #f3e8ff;
+        margin-top: 0.5rem;
+    }
+}
+
+/* ==========================================================================
+   5. Form & Touch Improvements
+   ========================================================================== */
+input, select, textarea, button {
+    font-size: 16px !important; /* ป้องกันไม่ให้หน้าจอ iOS auto-zoom ตอนกดพิมพ์ */
+}
+
+/* เพิ่มขนาดพื้นที่สัมผัสปุ่มบนมือถือให้กดง่ายขึ้น (ตามหลักสายตาและสรีระมนุษย์) */
+button, a {
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ==========================================================================
+   ปรับแต่งปุ่มในแถบเมนู (Navigation) สำหรับหน้าจอมือถือ
+   ========================================================================== */
+@media (max-width: 640px) {
+    /* ลดขนาดช่องว่างระหว่างปุ่มให้แคบลง */
+    nav .flex.items-center.space-x-4 {
+        column-gap: 0.5rem !important;
+        row-gap: 0.25rem !important;
+        flex-wrap: wrap; /* ป้องกันปุ่มหลุดขอบจอ */
+        justify-content: flex-end;
+    }
+
+    /* ปรับปุ่มออกจากระบบ และ ลิงก์กลับหน้าหลัก ให้เล็กลงพอดีจอ */
+    #btn-logout, 
+    nav a[href="index.html"]:not(.hover\:opacity-90) {
+        font-size: 11px !important; /* ลดขนาดตัวอักษร */
+        padding: 0.25rem 0.5rem !important; /* ลดขนาดกรอบปุ่ม */
+        border-radius: 0.375rem !important; /* ปรับความโค้งให้มนพอดีกับปุ่มที่เล็กลง */
+        min-height: auto !important; /* ยกเลิกความสูงขั้นต่ำเดิมเพื่อให้ปุ่มแบนลง */
+        line-height: 1.2 !important;
+    }
+
+    /* ปรับขนาดกล่องแสดงชื่อผู้ใช้ (ถ้ามี) ให้เล็กตามไปด้วย */
+    #user-display {
+        font-size: 11px !important;
+        padding: 0.25rem 0.5rem !important;
+    }
+}
